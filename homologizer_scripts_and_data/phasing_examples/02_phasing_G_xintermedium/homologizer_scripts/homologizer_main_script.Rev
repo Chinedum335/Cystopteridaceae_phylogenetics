@@ -1,0 +1,262 @@
+###############################################################################
+# Homologizer joint phasing + phylogeny model
+#
+# This script specifies a Bayesian model that jointly infers:
+#   (1) the phylogenetic tree
+#   (2) branch lengths
+#   (3) substitution model parameters
+#   (4) allele/homeolog phase across multiple loci
+#
+# By default, the analysis is run as an MCMC.
+# If bayes_factors = TRUE, marginal likelihoods can be estimated
+# via stepping-stone sampling (not shown here).
+#
+###############################################################################
+
+
+# Reading in script that initializes allele/homeolog phases
+initialPhaseFn = "InitialPhase.rev"
+
+# Reading in script that defines MCMC moves for phasing
+phaseMovesFn = "PhaseMoves.rev"
+
+# Reading in script that defines topological constraints (e.g., allele sister constraints)
+cladeconstraintfn = "clade_constraint.rev"
+
+
+# ---------------------------------------------------------------------------
+# Output and run settings
+# ---------------------------------------------------------------------------
+
+# Base name for all output files
+output_file = "../output/homologizer"
+
+# Whether to compute marginal likelihoods (not used below)
+bayes_factors = FALSE
+
+# Move index counter (must be initialized BEFORE adding moves)
+mvi = 0
+
+
+# ---------------------------------------------------------------------------
+# Input sequence alignments
+# ---------------------------------------------------------------------------
+
+# FASTA files for each locus
+alignments = ["../data/APP_homologizer.fa",
+              "../data/GAP_homologizer.fa",
+              "../data/IBR_homologizer.fa",
+              "../data/PGI_homologizer.fa",
+              "../data/TRNGR_homologizer.fa"]
+
+# Number of loci
+num_loci = alignments.size()
+
+# Read each alignment as discrete character data
+for (i in 1:num_loci) {
+    data[i] = readDiscreteCharacterData(alignments[i])
+}
+
+
+# ---------------------------------------------------------------------------
+# Initialize allele/homeolog phase
+# ---------------------------------------------------------------------------
+
+# Sets starting phase configurations for homologizer
+source(initialPhaseFn)
+
+
+
+# Add missing taxa so that each locus has a complete taxon set
+for (i in 1:num_loci) {
+    for (j in 1:num_loci) {
+        data[i].addMissingTaxa(data[j].taxa())
+    }
+}
+
+# ---------------------------------------------------------------------------
+# Topological constraints (force alleles to be sisters)
+# ---------------------------------------------------------------------------
+
+# User-defined constraints are loaded here
+source(cladeconstraintfn)
+
+
+# ---------------------------------------------------------------------------
+# Tree topology and branch-length model
+# ---------------------------------------------------------------------------
+
+# Number of taxa (tips) in the tree
+num_tips = data[1].ntaxa()
+n_branches = 2 * num_tips - 3
+
+# Prior on tree topology, incorporating any constraints
+
+tree_topology_distribution = dnUniformTopology(taxa = data[1].taxa(), constraints = constraints)
+
+# sample the tree topology
+tree_topology ~ tree_topology_distribution
+
+# MCMC proposals on the tree topology
+moves[++mvi] = mvNNI(tree_topology, weight = num_tips * 40)
+moves[++mvi] = mvSPR(tree_topology, weight = num_tips * 20)
+
+# ---------------------------------------------------------------------------
+# Branch-length model
+# ---------------------------------------------------------------------------
+
+# Hyperprior on mean branch length
+expected_branch_length ~ dnExponential(10)
+moves[++mvi] = mvScale(expected_branch_length)
+
+for(i in 1:n_branches) {
+    bl[i] ~ dnExponential(abs(1.0 / expected_branch_length))
+    moves[++mvi] = mvScale(bl[i], weight = 0.5)
+}
+
+# Joint scaling move for all branch lengths
+moves[++mvi] = mvVectorScale(bl, weight = 10.0)
+
+# Total tree length (deterministic)
+tree_length := sum(bl)
+
+# combine tree and branch lengths
+tree := fnTreeAssembly(tree_topology, bl)
+
+# ---------------------------------------------------------------------------
+# Substitution models (one per locus)
+# ---------------------------------------------------------------------------
+
+# substitution models
+for(i in 1:num_loci) {
+
+  er[i] ~ dnDirichlet([1,1,1,1,1,1])
+  moves[++mvi] = mvBetaSimplex(er[i], weight = 1)
+
+  pi[i] ~ dnDirichlet([1,1,1,1])
+  moves[++mvi] = mvBetaSimplex(pi[i], weight = 1)
+
+   # GTR rate matrix
+    Q[i] := fnGTR(er[i], pi[i])
+
+    # Gamma shape parameter for among-site rate variation
+    alpha[i] ~ dnLognormal(ln(1) - 0.5 * 0.5 * 0.5, 0.2)
+    moves[++mvi] = mvScale(alpha[i], weight = 1)
+
+    # Discretized gamma site-rate categories
+    site_rates[i] := fnDiscretizeGamma(alpha[i], alpha[i], 4)
+}
+
+
+# Proportional rate for each locus
+part_rates_prop ~ dnDirichlet(rep(2, num_loci))
+moves[++mvi] = mvBetaSimplex(part_rates_prop, weight = 2.0)
+
+# Scale so that mean rate across loci = 1
+part_rates := part_rates_prop * num_loci
+
+
+# ---------------------------------------------------------------------------
+# Phylogenetic likelihood (CTMCs)
+# ---------------------------------------------------------------------------
+
+
+# Define CTMCs for each locus (DO NOT CLAMP yet)
+for (i in 1:num_loci) {
+    ctmc[i] ~ dnPhyloCTMC(
+        tree        = tree,
+        Q           = Q[i],
+        branchRates = part_rates[i],
+        siteRates   = site_rates[i],
+        type        = "DNA"
+    )
+}
+
+
+# ---------------------------------------------------------------------------
+# Phasing moves (homologizer-specific)
+# ---------------------------------------------------------------------------
+
+# Adds MCMC proposals that update allele/homeolog phase
+source(phaseMovesFn)
+
+# ---------------------------------------------------------------------------
+# Clamp observed sequence data
+# ---------------------------------------------------------------------------
+
+# Attach observed alignments to CTMCs
+for (i in 1:num_loci) {
+    ctmc[i].clamp(data[i])
+}
+
+# ---------------------------------------------------------------------------
+# Model object
+# ---------------------------------------------------------------------------
+
+# Construct the full probabilistic model
+mymodel = model(Q)
+
+
+# set up monitors
+mni = 0
+
+# Main parameter log file
+monitors[++mni] = mnModel(filename = output_file + ".log", printgen = 1)
+
+# Tree samples
+monitors[++mni] = mnFile(filename = output_file + ".trees", printgen = 1, tree)
+
+# Screen output
+monitors[++mni] = mnScreen(printgen = 1)
+
+# Per-locus phase output
+for (i in 1:num_loci) {
+    monitors[++mni] = mnHomeologPhase(filename = output_file + "_locus_" + i + "_phase.log", printgen = 1, ctmc[i])
+}
+
+# Add additional variables to the main log
+monitors[1].addVariable(tree_length)
+
+for (i in 1:num_loci) {
+    monitors[1].addVariable(er[i])
+    monitors[1].addVariable(pi[i])
+    monitors[1].addVariable(alpha[i])
+}
+
+monitors[1].addVariable(part_rates)
+
+# ---------------------------------------------------------------------------
+# MCMC analysis
+# ---------------------------------------------------------------------------
+
+# analysis
+my_mcmc = mcmc(mymodel, monitors, moves)
+
+# run MCMC    
+burnin_gen = 1000
+tune_freq  = 100
+ngen       = 15000
+
+# Burn-in phase 
+if (burnin_gen > 0) {
+    my_mcmc.run(generations = burnin_gen, tuningInterval = tune_freq)  
+}
+
+# Main MCMC run
+my_mcmc.run(generations = ngen)
+
+# Print operator performance summary
+my_mcmc.operatorSummary()
+
+# ---------------------------------------------------------------------------
+# Posterior tree summaries
+# ---------------------------------------------------------------------------
+
+# Read posterior tree samples
+treetrace = readTreeTrace(output_file + ".trees", treetype="non-clock", burnin=0.30) 
+# Maximum a posteriori tree
+
+map_tree = mapTree(treetrace, output_file + "_map.tree")
+
+# Maximum clade credibility tree
+mcc_tree = mccTree(treetrace, output_file + "_mcc.tree")
