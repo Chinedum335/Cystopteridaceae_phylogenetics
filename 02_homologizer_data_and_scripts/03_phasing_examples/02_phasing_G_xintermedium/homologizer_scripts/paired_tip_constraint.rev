@@ -1,0 +1,7 @@
+clade_9635_A = clade("G_xint_9635_MN_A1", "G_xint_9635_MN_A2")
+clade_9635_B = clade("G_xint_9635_MN_B1", "G_xint_9635_MN_B2")
+clade_9635_C = clade("G_xint_9635_MN_C1", "G_xint_9635_MN_C2")
+clade_9635_D = clade("G_xint_9635_MN_D1", "G_xint_9635_MN_D2")
+
+# combine the constraints
+constraints = [clade_9635_A, clade_9635_B, clade_9635_C, clade_9635_D]
