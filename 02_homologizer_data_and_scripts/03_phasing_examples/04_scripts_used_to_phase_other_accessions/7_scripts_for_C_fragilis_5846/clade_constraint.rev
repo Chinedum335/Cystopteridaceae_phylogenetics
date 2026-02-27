@@ -1,0 +1,6 @@
+clade_5846_A = clade("C_fra_5846_CO_A1", "C_fra_5846_CO_A2")
+clade_5846_B = clade("C_fra_5846_CO_B1", "C_fra_5846_CO_B2")
+clade_5846_C = clade("C_fra_5846_CO_C1", "C_fra_5846_CO_C2")
+
+# combine the constraints
+constraints = [clade_5846_A, clade_5846_B, clade_5846_C]

@@ -1,0 +1,155 @@
+# --------------------------------------------------------
+# FIXED TREE ANALYSIS: Read existing tree instead of inferring it
+# --------------------------------------------------------
+# Author: Will Freyman (cleaned up version)
+# --------------------------------------------------------
+
+# File paths
+initialPhaseFn   = "../src/InitialPhase.rev"
+phaseMovesFn     = "../src/PhaseMoves.rev"
+fixed_tree_file  = "../src/homologizer_map.tree"
+output_file      = "output/homologizer"
+
+bayes_factors = FALSE
+mvi = 0   # Move index (must initialize before adding moves)
+
+# --------------------------------------------------------
+# INPUT SEQUENCE ALIGNMENTS
+# --------------------------------------------------------
+
+alignments = [
+    "../data/APP_homologizer.fa",
+    "../data/GAP_homologizer.fa",
+    "../data/IBR_homologizer.fa",
+    "../data/PGI_homologizer.fa",
+    "../data/TRNGR_homologizer.fa"
+]
+num_loci = alignments.size()
+
+for (i in 1:num_loci) {
+    data[i] = readDiscreteCharacterData(alignments[i])
+}
+
+# --------------------------------------------------------
+# INITIAL PHASE & TAXON SETUP
+# --------------------------------------------------------
+
+source(initialPhaseFn)
+
+# Add missing taxa across loci so all have the same set
+for (i in 1:num_loci) {
+    for (j in 1:num_loci) {
+        data[i].addMissingTaxa(data[j].taxa())
+    }
+}
+
+
+# --------------------------------------------------------
+# FIXED TREE
+# --------------------------------------------------------
+
+trees = readTrees(fixed_tree_file)
+tree  := trees[1]
+
+
+
+# --------------------------------------------------------
+# SUBSTITUTION MODELS (per locus)
+# --------------------------------------------------------
+
+for (i in 1:num_loci) {
+
+    er[i] ~ dnDirichlet([1,1,1,1,1,1])
+    moves[++mvi] = mvBetaSimplex(er[i], weight=1)
+
+    pi[i] ~ dnDirichlet([1,1,1,1])
+    moves[++mvi] = mvBetaSimplex(pi[i], weight=1)
+
+    Q[i] := fnGTR(er[i], pi[i])
+
+    alpha[i] ~ dnLognormal(ln(1) - 0.5 * 0.5 * 0.5, 0.2)
+    moves[++mvi] = mvScale(alpha[i], weight=1)
+
+    site_rates[i] := fnDiscretizeGamma(alpha[i], alpha[i], 4)
+}
+
+# --------------------------------------------------------
+# RATE HETEROGENEITY ACROSS LOCI
+# --------------------------------------------------------
+
+part_rates_prop ~ dnDirichlet(rep(2, num_loci))
+moves[++mvi] = mvBetaSimplex(part_rates_prop, weight=2.0)
+
+part_rates := part_rates_prop * num_loci
+
+# --------------------------------------------------------
+# PHYLOGENETIC CTMC (NOT CLAMPED YET)
+# --------------------------------------------------------
+
+for (i in 1:num_loci) {
+    ctmc[i] ~ dnPhyloCTMC(
+        tree       = tree,
+        Q          = Q[i],
+        branchRates= part_rates[i],
+        siteRates  = site_rates[i],
+        type       = "DNA"
+    )
+}
+
+# --------------------------------------------------------
+# PHASING PROPOSALS
+# --------------------------------------------------------
+
+source(phaseMovesFn)
+
+# Clamp CTMCs after all moves are loaded
+for (i in 1:num_loci) {
+    ctmc[i].clamp(data[i])
+}
+
+# --------------------------------------------------------
+# MODEL & MONITORS
+# --------------------------------------------------------
+
+mymodel = model(Q)
+
+mni = 0
+monitors[++mni] = mnModel(filename=output_file + ".log", printgen=1)
+monitors[++mni] = mnScreen(printgen=1)
+
+for (i in 1:num_loci){
+    monitors[++mni] = mnHomeologPhase(
+        filename = output_file + "_locus_" + i + "_phase.log",
+        printgen = 1,
+        ctmc[i]
+    )
+}
+
+# Add variables to model monitor
+for (i in 1:num_loci) {
+    monitors[1].addVariable(er[i])
+    monitors[1].addVariable(pi[i])
+    monitors[1].addVariable(alpha[i])
+}
+monitors[1].addVariable(part_rates)
+
+# --------------------------------------------------------
+# MCMC SETTINGS
+# --------------------------------------------------------
+
+burnin_gen = 1000
+tune_freq  = 100
+ngen       = 15000
+
+my_mcmc = mcmc(mymodel, monitors, moves)
+
+# Burn-in with tuning
+if (burnin_gen > 0) {
+    my_mcmc.run(generations=burnin_gen, tuningInterval=tune_freq)
+}
+
+# Main run
+my_mcmc.run(generations=ngen)
+
+# Summary
+my_mcmc.operatorSummary()

@@ -1,0 +1,5 @@
+clade_6979_A = clade("G_con_6979_Can_A1", "G_con_6979_Can_A2")
+clade_6979_B = clade("G_con_6979_Can_B1", "G_con_6979_Can_B2")
+
+# combine the constraints
+constraints = [clade_6979_A, clade_6979_B]

@@ -1,0 +1,5 @@
+clade_11702_A = clade("A_ten_11702_Mys_A1", "A_ten_11702_Mys_A2")
+clade_11702_B = clade("A_ten_11702_Mys_B1", "A_ten_11702_Mys_B2")
+
+# combine the constraints
+constraints = [clade_11702_A, clade_11702_B]

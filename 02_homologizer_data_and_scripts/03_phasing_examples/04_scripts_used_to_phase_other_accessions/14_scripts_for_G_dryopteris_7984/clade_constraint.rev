@@ -1,0 +1,5 @@
+clade_7984_A = clade("G_aok_7984_Jpn_A1", "G_aok_7984_Jpn_A2")
+clade_7984_B = clade("G_aok_7984_Jpn_B1", "G_aok_7984_Jpn_B2")
+
+# combine the constraints
+constraints = [clade_7984_A, clade_7984_B]
