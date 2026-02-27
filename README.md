@@ -11,6 +11,7 @@ The repository is organized to facilitate reproducibility of sequence processing
     -  This directory contains files required to run PURC for long-read amplicon sequence processing.
          -  PURC_config_file.txt - Configuration file used to run PURC.
          -  Barcode_seq.fasta - Pacific Biosciences barcode sequences used for demultiplexing.
+         -  CY25_APPmap.txt, CY25_GAPmap.txt, CY25_IBRmap.txt, CY25_PGImap.txt, CY25_TRNGRmap.txt - the barcode map files for each locus.
          -  Reference_seq.fa - Reference sequences for Cystopteridaceae used during PURC processing.
 
 -  `02_homologizer_data_and_scripts`
