@@ -15,7 +15,13 @@ The repository is organized to facilitate reproducibility of sequence processing
 
 -  `02_homologizer_data_and_scripts`
 
-    -  This directory contains all data and scripts used to prepare and run homologizer analyses, including mul-tree backbone construction and phasing workflows. The structure of the directory is as follows
+    -  This directory contains all data and scripts used to prepare and run homologizer analyses, including mul-tree backbone construction and phasing workflows.
+
+        To generate the backbone MUL-tree phylogeny, we implemented an iterative phasing strategy combined with paired-tip constraints in homologizer (Freyman et al. 2023; Freyman and Rothfels 2023). We began           by analyzing all known diploid accessions. Polyploid samples were then added step by step, starting with those for which at least one diploid progenitor was included in the dataset. Within                       Cystopteris, for example, we first phased all polyploids whose parental lineages were both represented. We then phased Cystopteris tenuis 16738, a tetraploid with one known diploid progenitor (C.                 protrusa) and a second progenitor inferred to belong to the fragilis complex. We then fixed the phasing of C. tenuis 16738 for subsequent runs by setting the initial phase configuration of each tip             to be the outcome of the phasing analyses and not assigning any phasing MCMC moves for that accession, while allowing its phylogenetic placement to be re-estimated. After this, we phased C. fragilis             7011, an allotetraploid that shares one subgenome with C. tenuis 16738 and has another that was not represented in the backbone set, fixed its phasing, etc. We continued adding and phasing accessions             in this manner until a representative of each known subgenome was included in the backbone.
+        Each homologizer analysis consisted of six independent MCMC runs of 15,000 generations. The first 1,000 generations were discarded as burn-in. Convergence was assessed using Tracer v1.7.2. We retained           only analyses in which effective sample sizes (ESS) were ≥200 for all monitored parameters and at least three independent runs converged on the same highest posterior distribution. Phasing confidence             was evaluated in two ways: (1) by examining posterior traces from all runs to confirm that at least three converged runs sampled from the same highest posterior distribution, and (2) by inspecting                 phasing plots to verify that the same phase configuration was consistently recovered across those converged runs.
+        RevBayes scripts implementing the paired-tip constraint approach, a tree-visualization script, and the final sequence datasets used to infer the backbone mul-tree and phase Gymnocarpium × intermedium            and Cystopteris laurentianare are  available here. 
+
+       The structure of the directory is as follows
     
     -  `/01_Scripts_for_homologizer_setup_and_plotting`
         -  This directory contains all the scripts for generating homologizer inputs, running homologizer and plotting phasing results.
@@ -55,7 +61,9 @@ The repository is organized to facilitate reproducibility of sequence processing
         -  `/03_phasing_C_laurentiana`
             -  `/data` - contains the input sequence data for each locus used in the phasing of C_laurentiana
             -  `/homologizer_scripts` - contains all the relevant homologizer scripts for implementing paired-tip constraint and also plotting the phase.
-            -  `C_lau_Plot.pdf` - final plot of the run. 
+            -  `C_lau_Plot.pdf` - final plot of the run.
+        - `/04_scripts_used_to_phase_other_accessions`
+          -  This folder contains the scripts used to phase all the other accessions in the backbone mul-tree
 
 
 
