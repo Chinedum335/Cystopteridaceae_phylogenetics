@@ -18,25 +18,24 @@ The repository is organized to facilitate reproducibility of sequence processing
 
     -  This directory contains all data and scripts used to prepare and run homologizer analyses, including mul-tree backbone inference and phasing workflows.
 
-        To generate the backbone MUL-tree phylogeny, we implemented an iterative phasing strategy combined with paired-tip constraints in homologizer (Freyman et al. 2023; Freyman and Rothfels 2023). We began           by analyzing all known diploid accessions. Polyploid samples were then added step by step, starting with those for which at least one diploid progenitor was included in the dataset. Within                       Cystopteris, for example, we first phased all polyploids whose parental lineages were both represented. We then phased Cystopteris tenuis 16738, a tetraploid with one known diploid progenitor (C.                 protrusa) and a second progenitor inferred to belong to the fragilis complex. We then fixed the phasing of C. tenuis 16738 for subsequent runs by setting the initial phase configuration of each tip             to be the outcome of the phasing analyses and not assigning any phasing MCMC moves for that accession, while allowing its phylogenetic placement to be re-estimated. After this, we phased C. fragilis             7011, an allotetraploid that shares one subgenome with C. tenuis 16738 and has another that was not represented in the backbone set, fixed its phasing, etc. We continued adding and phasing accessions             in this manner until a representative of each known subgenome was included in the backbone.
-        Each homologizer analysis consisted of six independent MCMC runs of 15,000 generations. The first 1,000 generations were discarded as burn-in. Convergence was assessed using Tracer v1.7.2. We retained           only analyses in which effective sample sizes (ESS) were ≥200 for all monitored parameters and at least three independent runs converged on the same highest posterior distribution. Phasing confidence             was evaluated in two ways: (1) by examining posterior traces from all runs to confirm that at least three converged runs sampled from the same highest posterior distribution, and (2) by inspecting                 phasing plots to verify that the same phase configuration was consistently recovered across those converged runs.
-        RevBayes scripts implementing the paired-tip constraint approach, a tree-visualization script, and the final sequence datasets used to infer the backbone mul-tree and phase Gymnocarpium × intermedium            and Cystopteris laurentianare are  available here. 
-
+        To generate the backbone MUL-tree phylogeny, we implemented an iterative phasing strategy combined with paired-tip constraints in homologizer (Freyman et al. 2023; Freyman and Rothfels 2023). We began           by analyzing all known diploid accessions. Polyploid samples were then added step by step, starting with those for which at least one diploid progenitor was included in the dataset. Within                       Cystopteris, for example, we phased Cystopteris tenuis 16738, a tetraploid with one known diploid progenitor (C. protrusa) and a second progenitor inferred to belong to the fragilis complex. We then fixed the phasing of C. tenuis 16738 for subsequent runs by setting the initial phase configuration of each tip to be the outcome of the phasing analyses and not assigning any phasing MCMC moves for that accession, while allowing its phylogenetic placement to be re-estimated. After this, we phased C. fragilis  7011, an allotetraploid that shares one subgenome with C. tenuis 16738 and has another that was not represented in the backbone set, fixed its phasing, etc. We continued adding and phasing accessions in this manner until a representative of each known subgenome was included in the backbone.
+        RevBayes scripts implementing the paired-tip constraint approach, a tree-visualization script, and the final sequence datasets used to infer the backbone mul-tree are  available here.
+       
        The structure of the directory is as follows
 
     -  `/01_Backbone_phased_sequences`
         -  This directory contains the phased backbone mul-tree sequence dataset. Each sequence is already renamed according to the subgenome assignment inferred in our analyses.These sequences can be used as reference tips when phasing additional Cystopteridaceae samples with homologizer. When incorporating these sequences into a new phasing analysis:
             - Copy the sequences from this directory into your locus alignments.
-            - Treat these sequences as diploid tips (i.e., do not assign phasing moves to them) because their subgenome assignments have already been inferred and encoded in the sequence names.These sequences serve as guide for the phasing of newly added Cystopteridaceae samples. 
+            - Treat these sequences as diploid tips (i.e., do not assign phasing moves to them) because their subgenome assignments have already been inferred and encoded in the sequence names.These sequences serve as a guide for the phasing of newly added Cystopteridaceae samples. 
 
     -  `/02_homologizer_paired_tip_phasing_pipeline`
         -  This directory contains all the scripts for generating homologizer inputs using the paired-tip approach, running the analysis in RevBayes, and plotting phasing results.
 
         - `01_generate_homologizer_inputs_and_phase_setup.R` - This script can be used to generate all required inputs to run 02_homologizer_main_script.rev RevBayes script. 
-            - Input
-                 -Generate_phase.csv(see below for description of what this file does). 
+            - Input:
+                 - Generate_phase.csv (see below for description of what this file does). 
 
-            - Output generated by this script include:
+            - Output generated by this script includes:
                 - `InitialPhase.rev` - This is the file that contains the initial phase assignment before running homologizer
                 - `PhaseMoves.rev` - This file sets up all the phasing MCMC moves for all the tips
                 - `paired_tip_constraint.rev` - This file sets up the paired- tip clade used to constrain sister tips
@@ -53,19 +52,19 @@ The repository is organized to facilitate reproducibility of sequence processing
         
         For this setup to work, individual homeologous sequences in the input sequence data file for any sample being phased must follow this naming convention: sample_ID_c1, sample_ID_c2, etc. (e.g., 16972_c1, 16972_c2). See the sequence data files in the `/03_example_phasing_runs` folder  for reference.
 
-        -  `02_homologizer_main_script.Rev` - This is the main RevBayes script used to run homologizer. 
-                - Required inputs:
-                    - locus alignment files, InitialPhase.rev, PhaseMoves.rev, paired_tip_constraint.rev and 
-                - Output: 
-                    - The script generates an output directory containing phasing MCMC output and the map.tree (maximum a posteriori tree)
+        -  `02_homologizer_main_script.Rev` - This is the main RevBayes script used to run homologizer.
+            - Required inputs:
+                - locus alignment files, InitialPhase.rev, PhaseMoves.rev, paired_tip_constraint.rev.
+            - Output:
+                - The script generates an output directory containing phasing MCMC output and the map.tree (maximum a posteriori tree)
 
-        -  `03_plot_phase_script.R` - This is the script used to plot the result of homologizer. The directory of the output folder has to be specified. Also this script takes subgenomes_names.csv as input and the output is the plot of the phasing.
+        -  `03_plot_phase_script.R` - This is the script used to plot the result of homologizer. The directory of the output folder has to be specified. Also, this script takes subgenomes_names.csv as input, and the output is the plot of the phasing.
 
     -  `/03_example_phasing_runs`
        -  This directory contains worked examples demonstrating  homologizer phasing for selected Cystopteridaceae taxa.
 
         -  `/01_phasing_C_tenuis`
-            -  `/data` - contains the input sequence data for each locus used in the phasing of C_tenuis. content include APP_homologizer.fa, GAP_homologizer.fa, IBR_homologizer.fa, PGI_homologizer.fa, TRNGR_homologizer.fa
+            -  `/data` - contains the input sequence data for each locus used in the phasing of C_tenuis. Content includes APP_homologizer.fa, GAP_homologizer.fa, IBR_homologizer.fa, PGI_homologizer.fa, TRNGR_homologizer.fa
             -  `/homologizer_scripts` - contains all the relevant homologizer scripts for implementing paired-tip constraint and also plotting the phase. It includes 02_homologizer_main_script.Rev, InitialPhase.rev, PhaseMoves.rev, paired_tip_constraint.rev, subgenomes_names.csv and 03_plot_phase_script.R scripts. 
             -  `C_tenuis_Plot.pdf` - final plot of the run. 
 
