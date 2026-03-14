@@ -6,7 +6,7 @@
 # Will Freyman
 #
 bayes_factors = FALSE
-output_file = "output/homologizer"
+output_file = "../output/homologizer"
 
 initialPhaseFn = "InitialPhase.rev"
 phaseMovesFn = "PhaseMoves.rev"
