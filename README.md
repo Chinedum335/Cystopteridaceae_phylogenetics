@@ -27,7 +27,7 @@ The repository is organized to facilitate reproducibility of sequence processing
         -  This directory contains the phased backbone mul-tree sequence dataset. Each sequence has been renamed according to the subgenome assignment inferred in our analyses, thereby fixing the phasing for downstream use.
         Phasing was fixed by renaming sequence copies at each locus to reflect their assigned subgenome. For example, after phasing the sample C_ten_16972_MN, if the APP copy originally named 16972_c1 was assigned to the tip C_ten_16972_MN_A, the sequence was renamed to C_ten_16972_MN_A. This ensures that, in subsequent analyses, this sequence is consistently associated with the corresponding subgenome-specific tip.
         
-        These backbone sequences can be used as reference tips when phasing additional Cystopteridaceae samples with homologizer.
+        - These backbone sequences can be used as reference tips when phasing additional Cystopteridaceae samples with homologizer.
         - How to use this dataset:
             - Copy the sequences from this directory into your locus alignments.
             - Treat these sequences as diploid tips (i.e., do not assign phasing moves to them) because their subgenome assignments have already been inferred and encoded in the sequence names.
