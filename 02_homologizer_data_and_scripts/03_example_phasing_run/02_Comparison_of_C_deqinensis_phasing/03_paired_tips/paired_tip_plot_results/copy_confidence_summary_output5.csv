@@ -1,0 +1,9 @@
+"sample","locus","homeolog","copy","displayed_tip","exact_tip_marginal_pp","homeolog_assignment_pp"
+"C_deq_12509_Chn","APP","C_deq_12509_Chn_B","12509_c1","C_deq_12509_Chn_B1",0.503065293732516,1
+"C_deq_12509_Chn","GAP","C_deq_12509_Chn_B","12509_c1","C_deq_12509_Chn_B1",0.502410570799357,1
+"C_deq_12509_Chn","GAP","C_deq_12509_Chn_B","12509_c2","C_deq_12509_Chn_B2",0.502410570799357,1
+"C_deq_12509_Chn","IBR","C_deq_12509_Chn_A","12509_c1","C_deq_12509_Chn_A1",0.501815368132849,1
+"C_deq_12509_Chn","IBR","C_deq_12509_Chn_B","12509_c2","C_deq_12509_Chn_B2",0.498660794000357,1
+"C_deq_12509_Chn","PGI","C_deq_12509_Chn_B","12509_c1","C_deq_12509_Chn_B1",0.496756145467532,1
+"C_deq_12509_Chn","PGI","C_deq_12509_Chn_A","12509_c2","C_deq_12509_Chn_A2",0.497946550800548,1
+"C_deq_12509_Chn","TRNGR","C_deq_12509_Chn_B","12509_c1","C_deq_12509_Chn_B2",0.481102315338373,0.965002083209333

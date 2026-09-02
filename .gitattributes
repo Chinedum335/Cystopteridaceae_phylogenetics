@@ -1,0 +1,16 @@
+# Keep source and documentation line endings consistent across platforms.
+* text=auto
+
+*.R text eol=lf
+*.Rev text eol=lf
+*.rev text eol=lf
+*.md text eol=lf
+*.csv text eol=lf
+*.txt text eol=lf
+*.fa text eol=lf
+*.fasta text eol=lf
+*.tree text eol=lf
+
+# Generated figures are binary files.
+*.pdf binary
+*.png binary

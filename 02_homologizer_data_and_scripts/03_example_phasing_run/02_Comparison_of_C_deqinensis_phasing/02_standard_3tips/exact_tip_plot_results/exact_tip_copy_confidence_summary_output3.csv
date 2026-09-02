@@ -1,0 +1,9 @@
+"sample","locus","tip","copy","exact_tip_marginal_pp"
+"C_deq_12509_Chn","APP","C_deq_12509_Chn_A1","12509_c1",0.498608033634453
+"C_deq_12509_Chn","GAP","C_deq_12509_Chn_A1","12509_c1",0.501846485995114
+"C_deq_12509_Chn","GAP","C_deq_12509_Chn_B1","12509_c2",0.501846485995114
+"C_deq_12509_Chn","IBR","C_deq_12509_Chn_B1","12509_c2",0.507300721549912
+"C_deq_12509_Chn","IBR","C_deq_12509_Chn_A2","12509_c1",1
+"C_deq_12509_Chn","PGI","C_deq_12509_Chn_A1","12509_c1",0.50230100562468
+"C_deq_12509_Chn","PGI","C_deq_12509_Chn_A2","12509_c2",1
+"C_deq_12509_Chn","TRNGR","C_deq_12509_Chn_B1","12509_c1",0.491278904607693
