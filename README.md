@@ -305,7 +305,7 @@ new analysis, treat them as fixed tips rather than assigning new phasing moves.
 - [RevBayes documentation](https://revbayes.github.io/)
 - Rothfels et al. (2017). [Next-generation polyploid phylogenetics: rapid resolution of hybrid polyploid complexes using PacBio single-molecule sequencing](https://doi.org/10.1111/nph.14111).
 - Schafran et al. (2023). [PURC Provides Improved Sequence Inference for Polyploid Phylogenetics and Other Manifestations of the Multiple-Copy Problem] (https://link.springer.com/protocol/10.1007/978-1-0716-2561-3_10).
-- Project data archive: [Dryad](https://doi.org/10.5061/dryad.brv15dvqc)
+- Project data archive: [Dryad](https://doi.org/10.5061/dryad.tmpg4f5g1)
 
 When citing this repository, please cite the accompanying Cystopteridaceae
 article and the archived dataset once their final bibliographic details are
@@ -316,7 +316,7 @@ available.
 The repository is maintained at
 [github.com/Chinedum335/Cystopteridaceae_phylogenetics](https://github.com/Chinedum335/Cystopteridaceae_phylogenetics).
 Final sequence alignments, scripts, and voucher metadata are also archived in
-[Dryad](https://doi.org/10.5061/dryad.brv15dvqc).
+[Dryad](https://doi.org/10.5061/dryad.tmpg4f5g1).
 
 ## License
 
